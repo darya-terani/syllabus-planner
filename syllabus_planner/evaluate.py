@@ -111,22 +111,69 @@ def score_one(pred: Syllabus, gold: Syllabus, name: str = "") -> Score:
     return s
 
 
+N_BOOTSTRAP = 1000
+METRICS = ("precision", "recall", "f1", "weight_accuracy")
+
+
+def bootstrap_ci(results: dict[str, Score], n: int = N_BOOTSTRAP, alpha: float = 0.05, seed: int = 0) -> dict[str, tuple[float, float]]:
+    """Percentile bootstrap confidence intervals for the pooled (micro) metrics.
+
+    The unit we resample is the SYLLABUS, not the individual deadline. Deadlines in
+    the same syllabus are not independent: if a syllabus uses an unusual format,
+    the extractor tends to miss several of its dates at once. Resampling single
+    deadlines would pretend those errors are independent and give intervals that
+    are too narrow.
+
+    Steps: draw len(results) syllabi with replacement, pool their counts, compute
+    the metric; repeat n times; report the alpha/2 and 1-alpha/2 percentiles.
+    """
+    import random
+
+    rng = random.Random(seed)  # fixed seed so the report is reproducible
+    scores = list(results.values())
+    if not scores:
+        return {m: (0.0, 0.0) for m in METRICS}
+
+    samples: dict[str, list[float]] = {m: [] for m in METRICS}
+    for _ in range(n):
+        pooled = Score()
+        for s in rng.choices(scores, k=len(scores)):
+            pooled.add(Score(s.tp, s.fp, s.fn, s.comp_labeled, s.comp_found, s.comp_weight_correct))
+        for m in METRICS:
+            samples[m].append(getattr(pooled, m))
+
+    def percentile(values: list[float], q: float) -> float:
+        ordered = sorted(values)
+        return ordered[min(len(ordered) - 1, max(0, round(q * (len(ordered) - 1))))]
+
+    return {m: (percentile(v, alpha / 2), percentile(v, 1 - alpha / 2)) for m, v in samples.items()}
+
+
 def report(results: dict[str, Score], method: str) -> str:
     total = Score()
     rows = []
     for name, s in sorted(results.items()):
         total.add(s)
         rows.append(f"| {name} | {s.precision:.2f} | {s.recall:.2f} | {s.f1:.2f} | {s.weight_accuracy:.2f} |")
+    ci = bootstrap_ci(results)
+
+    def fmt(metric: str) -> str:
+        low, high = ci[metric]
+        return f"{getattr(total, metric):.3f} | [{low:.3f}, {high:.3f}]"
+
     header = [
         f"## Results: {method} ({len(results)} syllabi)",
         "",
-        "| Metric | Value |",
-        "| --- | --- |",
-        f"| Deadline precision | {total.precision:.3f} |",
-        f"| Deadline recall | {total.recall:.3f} |",
-        f"| Deadline F1 | {total.f1:.3f} |",
-        f"| Grade weight accuracy | {total.weight_accuracy:.3f} |",
-        f"| Labeled deadlines | {total.tp + total.fn} |",
+        f"| Metric | Value | 95% bootstrap CI ({N_BOOTSTRAP:,} resamples) |",
+        "| --- | --- | --- |",
+        f"| Deadline precision | {fmt('precision')} |",
+        f"| Deadline recall | {fmt('recall')} |",
+        f"| Deadline F1 | {fmt('f1')} |",
+        f"| Grade weight accuracy | {fmt('weight_accuracy')} |",
+        f"| Labeled deadlines | {total.tp + total.fn} | |",
+        "",
+        "Confidence intervals resample whole syllabi with replacement, because errors "
+        "cluster by syllabus (a messy format tends to break many deadlines at once).",
         "",
         "### Per syllabus",
         "",

@@ -50,6 +50,25 @@ def test_wrong_weight_is_flagged():
     assert s.weight_accuracy == 0 and any("WRONG WEIGHT" in e for e in s.errors)
 
 
+def test_bootstrap_ci_brackets_the_point_estimate():
+    from syllabus_planner.evaluate import Score, bootstrap_ci
+
+    results = {f"s{i}": Score(tp=8 + i % 3, fp=i % 2, fn=1) for i in range(20)}
+    pooled = Score()
+    for s in results.values():
+        pooled.add(s)
+    low, high = bootstrap_ci(results)["f1"]
+    assert low <= pooled.f1 <= high and high - low < 0.2
+
+
+def test_bootstrap_ci_is_zero_width_when_every_syllabus_is_identical():
+    from syllabus_planner.evaluate import Score, bootstrap_ci
+
+    results = {f"s{i}": Score(tp=9, fp=1, fn=1) for i in range(10)}
+    low, high = bootstrap_ci(results)["precision"]
+    assert low == high == 0.9
+
+
 # ---- validation -------------------------------------------------------------
 
 def test_weights_not_summing_to_100_warns():

@@ -10,10 +10,12 @@ Every term, students copy dozens of dates out of syllabi by hand, and a missed o
 
 Evaluated on **N** hand-labeled syllabi (UC Davis and public course pages) against a rule-based baseline.
 
-| Extractor | Deadline precision | Deadline recall | Deadline F1 | Grade weight accuracy |
+| Extractor | Deadline precision | Deadline recall | Deadline F1 (95% CI) | Grade weight accuracy |
 | --- | --- | --- | --- | --- |
 | Rules (regex baseline) | – | – | – | – |
 | Claude (structured output) | – | – | – | – |
+
+Intervals are 95% percentile bootstrap CIs from 1,000 resamples of whole syllabi.
 
 **What the errors show:** _fill in after running the eval, e.g. which formats fail (scanned PDFs, weekly recurring items, dates without a year)._
 
@@ -38,6 +40,7 @@ PDF ──► text extraction ──► extractor ──► validation ──►
 - A predicted deadline counts as correct only if the **date is exact** and the title is similar (fuzzy ratio ≥ 0.5) or the item type matches. Each labeled item can be matched once.
 - A grade weight is correct if within 0.5 percentage points.
 - Metrics are micro-averaged across all syllabi.
+- Uncertainty: with a few dozen syllabi, a single F1 number can mislead, so each metric gets a 95% bootstrap confidence interval. The resampling unit is the syllabus, not the deadline, because errors cluster within a syllabus (one unusual format can break many dates at once), and resampling deadlines independently would make the intervals too narrow.
 - The term (e.g. "Fall 2026") is passed to both extractors, since a student selects it in the app.
 
 ## Quickstart
