@@ -1,0 +1,23 @@
+{
+  "course_code": "DSC 101",
+  "course_title": "Introduction to Applied Data Analysis",
+  "term": "Fall 2026",
+  "grade_components": [
+    {"name": "Homework", "weight_pct": 25},
+    {"name": "Quizzes", "weight_pct": 10},
+    {"name": "Midterm Exam", "weight_pct": 20},
+    {"name": "Final Project", "weight_pct": 20},
+    {"name": "Final Exam", "weight_pct": 25}
+  ],
+  "deadlines": [
+    {"title": "HW 1", "type": "assignment", "due_date": "2026-10-02"},
+    {"title": "HW 2", "type": "assignment", "due_date": "2026-10-09"},
+    {"title": "Project proposal", "type": "project", "due_date": "2026-10-16"},
+    {"title": "Midterm exam", "type": "exam", "due_date": "2026-10-22"},
+    {"title": "HW 3", "type": "assignment", "due_date": "2026-10-30"},
+    {"title": "HW 4", "type": "assignment", "due_date": "2026-11-06"},
+    {"title": "HW 5", "type": "assignment", "due_date": "2026-11-20"},
+    {"title": "Final project report", "type": "project", "due_date": "2026-12-04", "due_time": "23:59"},
+    {"title": "Final exam", "type": "exam", "due_date": "2026-12-10", "due_time": "10:30"}
+  ]
+}

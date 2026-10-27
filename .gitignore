@@ -1,0 +1,16 @@
+# Real syllabi belong to their instructors: never commit them
+data/syllabi/
+data/labels/*
+!data/labels/.gitkeep
+results/*/
+
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+output/
