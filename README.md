@@ -102,4 +102,4 @@ tests/                 unit tests (LLM is mocked; no API key needed)
 
 ## Author
 
-Darya Terani, B.S. Statistics, UC Davis. Built as the extraction engine behind [Scholr](https://usescholr.com), an AI academic co-pilot for students.
+Darya Terani, Statistics and Economics, UC Davis. Built as the extraction engine behind [Scholr](https://usescholr.com), an AI academic co-pilot for students.
